@@ -41,7 +41,7 @@ const CardsList = () => {
   });
 
   return (
-    <div className="min-h-screen py-8">
+    <div className=" py-8">
       <div className="container mx-auto px-4">
         {/* Фильтр */}
         <div className="flex justify-end mb-6">

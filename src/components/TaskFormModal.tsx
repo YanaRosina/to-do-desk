@@ -150,7 +150,7 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black/80 bg-opacity-50 z-40"
         onClick={handleClose}
       />
       
