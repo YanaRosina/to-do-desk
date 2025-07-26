@@ -1,9 +1,33 @@
-import  CardList from "@/components/CardsList";
-export default function HomePage() {
+
+'use client';
+
+import { CreateTaskButton } from '@/components/CreateTaskButton';
+import { useTaskModal } from '@/hooks/useTaskModal';
+import  CardsList  from '@/components/CardsList'; // Ваш существующий компонент
+
+export function HomePage() {
+  const { openCreateModal } = useTaskModal();
   return (
-    <div className="flex flex-col  min-h-screen bg-background">
-      <h1 className="text-3xl font-bold mx-auto py-2 text-white">To-Do Desk</h1>
-      <CardList />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with Create Button */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <h1 className="text-2xl font-bold text-gray-900">
+              To-Do Desk
+            </h1>
+            
+            <CreateTaskButton onClick={openCreateModal} />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Ваш существующий CardsList компонент */}
+        <CardsList />
+      </div>
     </div>
   );
 }
+

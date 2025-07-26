@@ -1,46 +1,49 @@
-import { TCardItemProps } from "@/types/cards";
-import clsx from "clsx";
-export const CardItem = ({
-  title,
-  description,
-  date,
-  priority,
-  status
-}: TCardItemProps) => {
-    const borderColor = clsx({
-    'border-3 border-red-700': priority === 'high',
-    'border-3 border-yellow-500': priority === 'medium',
-    'border-3 border-green-700': priority === 'low',
-  });
-  const priorityColors = {
-    high: 'text-red-700',
-    medium: 'text-yellow-600',
-    low: 'text-green-700',
-  };
-  return (
-  <div
-      className={clsx(
-        "bg-stone-300 shadow-md rounded-xl p-4 m-4 w-full max-w-sm mx-auto shadow-xl/30 hover:scale-105 duration-400",
-       
-        borderColor
-      )}
-     >
-      <h2 className="text-xl font-semibold text-center text-gray-800 ">{title}</h2>
+import React from 'react';
+import { TCardData } from '@/types/cards';
+import { CardActions } from './CardActions';
+import { getStatusColor, getPriorityColor, getStatusLabel, getPriorityLabel } from '@/utils/cardHelpers';
 
-      <p className="text-gray-600 ">
-        <span className="font-bold text-gray-700">Date:</span> {date}
+interface CardItemProps {
+  card: TCardData;
+}
+
+export function CardItem({ card }: CardItemProps) {
+  return (
+    <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+      {/* Кнопка редактирования в правом верхнем углу */}
+      <div className="absolute top-2 right-2">
+        <CardActions taskId={card.id} />
+      </div>
+
+      {/* Заголовок */}
+      <h3 className="text-lg font-semibold text-gray-900 mb-2 pr-8">
+        {card.title}
+      </h3>
+
+      {/* Описание */}
+      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        {card.description}
       </p>
-      <p className={clsx("text-gray-600", priorityColors[priority])}>
-        <span className="font-bold text-gray-700">Priority: </span>
-        {priority}
-      </p>
-      <p className="text-gray-600">
-        <span className="font-bold text-gray-700">Status:</span> {status}
-      </p>
-      <p className="text-gray-600">{description}</p>
-      <button className="mt-4 bg-[#4F4557]/35 px-4 py-2 text-white font-bold rounded hover:bg-[#4f4557] transition-colors cursor-pointer mx-auto block">
-        Delite
-      </button>
+
+      {/* Метаинформация */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          {/* Статус */}
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(card.status)}`}>
+            {getStatusLabel(card.status)}
+          </span>
+
+          {/* Приоритет */}
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(card.priority)}`}>
+            {getPriorityLabel(card.priority)}
+          </span>
+        </div>
+
+        {/* Дата */}
+        <span className="text-xs text-gray-500">
+          {card.date}
+        </span>
+      </div>
     </div>
   );
-};
+}
