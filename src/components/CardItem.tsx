@@ -10,7 +10,7 @@ interface CardItemProps {
 export function CardItem({ card }: CardItemProps) {
   return (
     <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-      {/* Кнопка редактирования в правом верхнем углу */}
+      {/* Кнопка редактирования */}
       <div className="absolute top-2 right-2">
         <CardActions taskId={card.id} />
       </div>

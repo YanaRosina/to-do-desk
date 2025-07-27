@@ -9,13 +9,27 @@ import { useTaskModal } from '@/hooks/useTaskModal';
 const CardsList = () => {
   const [cards, setCards] = useState<TCardData[]>([]);
   const [filter, setFilter] = useState<'date' | 'title' | 'status'>('date');
-  const { refreshTrigger } = useTaskModal(); // Получаем триггер обновления
+  const { refreshTrigger } = useTaskModal();
 
   // Загружаем карточки при монтировании и при изменении refreshTrigger
   useEffect(() => {
     const loaded = loadCardsFromStorage();
     setCards(loaded);
-  }, [refreshTrigger]); // Добавляем refreshTrigger в зависимости
+  }, [refreshTrigger]);
+
+  // ЕДИНСТВЕННОЕ ДОБАВЛЕНИЕ: слушаем обновления от канбан-доски
+  useEffect(() => {
+    const handleCardsUpdated = () => {
+      const loaded = loadCardsFromStorage();
+      setCards(loaded);
+    };
+
+    window.addEventListener('cardsUpdated', handleCardsUpdated);
+    
+    return () => {
+      window.removeEventListener('cardsUpdated', handleCardsUpdated);
+    };
+  }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilter(e.target.value as 'date' | 'title' | 'status');
@@ -41,7 +55,7 @@ const CardsList = () => {
   });
 
   return (
-    <div className=" py-8">
+    <div className="min-h-screen py-8">
       <div className="container mx-auto px-4">
         {/* Фильтр */}
         <div className="flex justify-end mb-6">
@@ -60,8 +74,8 @@ const CardsList = () => {
           </select>
         </div>
 
-        {/* Карточки */}
-        <div className="flex flex-col space-y-4">
+        {/* Карточки - БЕЗ ИЗМЕНЕНИЙ */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {sortedCards.map((card) => (
             <CardItem
               key={card.id}

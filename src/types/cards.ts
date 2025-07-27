@@ -4,7 +4,8 @@ export type TCardItemProps = {
   date: string;
   priority: "low" | "medium" | "high";
   status: "new" | "in-progress" | "tested" | "done";
-};
+  order?: number; // Добавляем опциональное поле для порядка
+}
 
 // А для данных с id создайте отдельный тип:
 export type TCardData = {

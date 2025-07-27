@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+// import { useRouter } from 'next/navigation';
 import { TCardData, TCardItemProps } from '@/types/cards';
 import { loadCardsFromStorage, saveCardsToStorage } from '@/utils/cards-storage';
 
@@ -13,7 +14,7 @@ interface TaskFormModalProps {
 }
 
 export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: TaskFormModalProps) {
-
+  // const router = useRouter();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const [formData, setFormData] = useState<{
@@ -109,19 +110,26 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
         ? (Math.max(...cards.map((c: TCardData) => parseInt(c.id))) + 1).toString() 
         : '1';
       
+      // Вычисляем order для новой карточки (последняя в колонке)
+      const cardsInStatus = cards.filter(card => card.status === formData.status);
+      const maxOrder = cardsInStatus.length > 0 
+        ? Math.max(...cardsInStatus.map(card => card.order || 0)) 
+        : -1;
+      
       const newCard: TCardData = {
         id: newId,
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
         status: formData.status,
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        order: maxOrder + 1 // Устанавливаем порядок
       };
       cards.push(newCard);
     }
     
-    saveCardsToStorage(cards); // Используем функцию из utils
-    onSave(); // Вызываем callback для обновления списка
+    saveCardsToStorage(cards);
+    onSave();
     handleClose();
   };
 
@@ -133,7 +141,7 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
     saveCardsToStorage(filteredCards);
     
     setShowDeleteConfirm(false);
-    onSave(); // Вызываем callback для обновления списка
+    onSave();
     handleClose();
   };
 
@@ -150,7 +158,7 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black bg-opacity-50 z-40"
         onClick={handleClose}
       />
       
