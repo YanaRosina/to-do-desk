@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { TCardData } from '@/types/cards';
-import { CardActions } from './CardActions';
+import { CardActions } from '../buttons/CardActions';
 import { getPriorityColor, getPriorityLabel } from '@/utils/cardHelpers';
 
 interface KanbanCardProps {

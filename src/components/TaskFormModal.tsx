@@ -1,9 +1,8 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
 import { TCardData, TCardItemProps } from '@/types/cards';
 import { loadCardsFromStorage, saveCardsToStorage } from '@/utils/cards-storage';
+import { loadCustomStatuses } from '@/utils/custom-statuses'; // Импортируем функцию загрузки статусов
 
 interface TaskFormModalProps {
   taskId: string | null;
@@ -14,36 +13,65 @@ interface TaskFormModalProps {
 }
 
 export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: TaskFormModalProps) {
-  // const router = useRouter();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [availableStatuses, setAvailableStatuses] = useState<Array<{value: string, label: string}>>([]);
   
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
     priority: TCardItemProps['priority'];
-    status: TCardItemProps['status'];
+    status: string;
   }>({
     title: '',
     description: '',
     priority: 'medium',
     status: 'new'
   });
-  
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-  // Статусы и приоритеты
-  const statuses = [
-    { value: 'new', label: 'Новая' },
-    { value: 'in-progress', label: 'В процессе' },
-    { value: 'tested', label: 'Протестирована' },
-    { value: 'done', label: 'Завершена' }
-  ];
-
+  // Приоритеты остаются статичными
   const priorities = [
     { value: 'low', label: 'Низкий' },
     { value: 'medium', label: 'Средний' },
     { value: 'high', label: 'Высокий' }
   ];
+
+  // Загружаем статусы при открытии модального окна
+  useEffect(() => {
+    if (isOpen) {
+      const customStatuses = loadCustomStatuses();
+      const statusOptions = customStatuses.map(status => ({
+        value: status.id,
+        label: status.label
+      }));
+      setAvailableStatuses(statusOptions);
+      
+      // Устанавливаем первый статус по умолчанию, если formData.status не установлен
+      if (!isEditMode && statusOptions.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          status: statusOptions[0].value
+        }));
+      }
+    }
+  }, [isOpen, isEditMode]);
+
+  // Слушаем изменения статусов (если они обновляются в другом месте)
+  useEffect(() => {
+    const handleStatusesUpdate = () => {
+      if (isOpen) {
+        const customStatuses = loadCustomStatuses();
+        const statusOptions = customStatuses.map(status => ({
+          value: status.id,
+          label: status.label
+        }));
+        setAvailableStatuses(statusOptions);
+      }
+    };
+
+    window.addEventListener('statusesUpdated', handleStatusesUpdate);
+    return () => window.removeEventListener('statusesUpdated', handleStatusesUpdate);
+  }, [isOpen]);
 
   // Загрузка данных при редактировании
   useEffect(() => {
@@ -60,12 +88,15 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
         });
       }
     } else if (!isEditMode && isOpen) {
-      // Сброс формы для создания
+      // Для создания новой карточки устанавливаем первый доступный статус
+      const customStatuses = loadCustomStatuses();
+      const firstStatus = customStatuses.length > 0 ? customStatuses[0].id : 'new';
+      
       setFormData({
         title: '',
         description: '',
         priority: 'medium',
-        status: 'new'
+        status: firstStatus
       });
     }
     
@@ -123,7 +154,7 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
         priority: formData.priority,
         status: formData.status,
         date: new Date().toISOString().split('T')[0],
-        order: maxOrder + 1 // Устанавливаем порядок
+        order: maxOrder + 1
       };
       cards.push(newCard);
     }
@@ -146,7 +177,13 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
   };
 
   const handleClose = () => {
-    setFormData({ title: '', description: '', priority: 'medium', status: 'new' });
+    const firstAvailableStatus = availableStatuses.length > 0 ? availableStatuses[0].value : 'new';
+    setFormData({ 
+      title: '', 
+      description: '', 
+      priority: 'medium', 
+      status: firstAvailableStatus 
+    });
     setErrors({});
     setShowDeleteConfirm(false);
     onClose();
@@ -158,7 +195,7 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black/80 bg-opacity-50 z-40"
         onClick={handleClose}
       />
       
@@ -233,25 +270,30 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
               </select>
             </div>
 
-            {/* Status/Category */}
+            {/* Status - теперь динамический */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Статус
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as TCardItemProps['status'] }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={availableStatuses.length === 0}
               >
-                {statuses.map(status => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
+                {availableStatuses.length === 0 ? (
+                  <option value="">Загрузка статусов...</option>
+                ) : (
+                  availableStatuses.map(status => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 
-            {/* Date (only show in edit mode, read-only) */}
+            {/* Дата создания - только для редактирования */}   
             {isEditMode && taskId !== 'new' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -292,7 +334,8 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
               
               <button
                 onClick={handleSave}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={availableStatuses.length === 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isEditMode ? 'Сохранить' : 'Создать'}
               </button>
@@ -304,7 +347,7 @@ export function TaskFormModal({ taskId, isOpen, isEditMode, onClose, onSave }: T
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <>
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50" />
+          <div className="fixed inset-0 bg-black/80 bg-opacity-50 z-50" />
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
               <div className="px-6 py-4">

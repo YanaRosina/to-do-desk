@@ -1,18 +1,12 @@
 import { TCardItemProps } from '@/types/cards';
+import { getStatusColor as getCustomStatusColor, getStatusLabel as getCustomStatusLabel } from '@/utils/custom-statuses';
 
-export const getStatusColor = (status: TCardItemProps['status']) => {
-  switch (status) {
-    case 'new':
-      return 'bg-gray-100 text-gray-800';
-    case 'in-progress':
-      return 'bg-blue-100 text-blue-800';
-    case 'tested':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'done':
-      return 'bg-green-100 text-green-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
+export const getStatusColor = (status: string) => {
+  return getCustomStatusColor(status);
+};
+
+export const getStatusLabel = (status: string) => {
+  return getCustomStatusLabel(status);
 };
 
 export const getPriorityColor = (priority: TCardItemProps['priority']) => {
@@ -25,21 +19,6 @@ export const getPriorityColor = (priority: TCardItemProps['priority']) => {
       return 'bg-red-100 text-red-800';
     default:
       return 'bg-gray-100 text-gray-800';
-  }
-};
-
-export const getStatusLabel = (status: TCardItemProps['status']) => {
-  switch (status) {
-    case 'new':
-      return 'Новая';
-    case 'in-progress':
-      return 'В процессе';
-    case 'tested':
-      return 'Протестирована';
-    case 'done':
-      return 'Завершена';
-    default:
-      return status;
   }
 };
 

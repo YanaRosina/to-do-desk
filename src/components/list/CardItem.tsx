@@ -1,6 +1,6 @@
 import React from 'react';
 import { TCardData } from '@/types/cards';
-import { CardActions } from './CardActions';
+import { CardActions } from '../buttons/CardActions';
 import { getStatusColor, getPriorityColor, getStatusLabel, getPriorityLabel } from '@/utils/cardHelpers';
 
 interface CardItemProps {

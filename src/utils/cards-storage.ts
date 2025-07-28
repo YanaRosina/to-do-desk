@@ -1,7 +1,7 @@
 import { TCardData } from '@/types/cards';
 import defaultCards from '@/consts/defaultCards';
 
-const STORAGE_KEY = 'todo-cards'; // Меняем на 'todo-cards' для согласованности
+const STORAGE_KEY = 'todo-cards'; 
 
 export const loadCardsFromStorage = (): TCardData[] => {
   if (typeof window === 'undefined') return []; // SSR guard

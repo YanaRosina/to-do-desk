@@ -1,13 +1,15 @@
+// types/cards.ts
+
 export type TCardItemProps = {
   title: string;
   description: string;
   date: string;
   priority: "low" | "medium" | "high";
-  status: "new" | "in-progress" | "tested" | "done";
-  order?: number; // Добавляем опциональное поле для порядка
+  status: string; 
+  order?: number;
 }
 
-// А для данных с id создайте отдельный тип:
 export type TCardData = {
   id: string;
 } & TCardItemProps;
+

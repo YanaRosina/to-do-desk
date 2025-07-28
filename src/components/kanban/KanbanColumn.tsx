@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TCardData, TCardItemProps } from '@/types/cards';
+import { TCardData } from '@/types/cards';
 import { KanbanCard } from './KanbanCard';
-import { getStatusColor } from '@/utils/cardHelpers';
+import { getStatusColor, loadCustomStatuses } from '@/utils/custom-statuses';
+import { ColumnManagement } from './ColumnManagement';
 import { DragDropResult } from '@/types/drag-drop';
 
 interface KanbanColumnProps {
-  status: TCardItemProps['status'];
+  status: string; // Изменили тип с фиксированного на string
   title: string;
   cards: TCardData[];
   onDragEnd: (result: DragDropResult) => void;
@@ -114,16 +115,27 @@ export function KanbanColumn({ status, title, cards, onDragEnd }: KanbanColumnPr
   };
 
   const statusColorClass = getStatusColor(status);
+  
+  // Находим объект статуса для передачи в ColumnManagement
+  const statusObject = loadCustomStatuses().find(s => s.id === status);
 
   return (
-    <div className="flex flex-col w-80 bg-gray-50 rounded-lg">
+    <div className="group flex flex-col w-80 bg-gray-50 rounded-lg">
       {/* Заголовок колонки */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">{title}</h3>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColorClass}`}>
-            {cards.length}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColorClass}`}>
+              {cards.length}
+            </span>
+            {statusObject && (
+              <ColumnManagement 
+                status={statusObject} 
+                onColumnRemoved={() => window.dispatchEvent(new Event('statusesUpdated'))}
+              />
+            )}
+          </div>
         </div>
       </div>
 

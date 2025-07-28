@@ -1,23 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { TCardData, TCardItemProps } from '@/types/cards';
+import { TCardData} from '@/types/cards';
 import { loadCardsFromStorage, saveCardsToStorage } from '@/utils/cards-storage';
 import { useTaskModal } from '@/hooks/useTaskModal';
 import { KanbanColumn } from './KanbanColumn';
+import { AddColumnButton } from './AddColumnButton';
 import { DragDropResult } from '@/types/drag-drop';
+import { loadCustomStatuses, CustomStatus } from '@/utils/custom-statuses';
 
 const KanbanBoard = () => {
   const [cards, setCards] = useState<TCardData[]>([]);
+  const [statuses, setStatuses] = useState<CustomStatus[]>([]);
   const { refreshTrigger } = useTaskModal();
 
-  // Определяем колонки канбан доски
-  const columns: { status: TCardItemProps['status']; label: string }[] = [
-    { status: 'new', label: 'Новые' },
-    { status: 'in-progress', label: 'В процессе' },
-    { status: 'tested', label: 'Протестированы' },
-    { status: 'done', label: 'Завершены' }
-  ];
+  // Загружаем статусы при монтировании
+  useEffect(() => {
+    const loadedStatuses = loadCustomStatuses();
+    setStatuses(loadedStatuses);
+  }, []);
 
   // Загружаем карточки при монтировании и при изменении refreshTrigger
   useEffect(() => {
@@ -39,14 +40,28 @@ const KanbanBoard = () => {
     };
   }, []);
 
+  // Слушаем событие обновления статусов
+  useEffect(() => {
+    const handleStatusesUpdated = () => {
+      const loadedStatuses = loadCustomStatuses();
+      setStatuses(loadedStatuses);
+    };
+
+    window.addEventListener('statusesUpdated', handleStatusesUpdated);
+    
+    return () => {
+      window.removeEventListener('statusesUpdated', handleStatusesUpdated);
+    };
+  }, []);
+
   // Группируем карточки по статусам и сортируем по order
-  const groupedCards = columns.reduce((acc, column) => {
-    const columnCards = cards
-      .filter(card => card.status === column.status)
-      .sort((a, b) => (a.order || 0) - (b.order || 0)); // Сортируем по order
-    acc[column.status] = columnCards;
+  const groupedCards = statuses.reduce((acc, status) => {
+    const statusCards = cards
+      .filter(card => card.status === status.id)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+    acc[status.id] = statusCards;
     return acc;
-  }, {} as Record<TCardItemProps['status'], TCardData[]>);
+  }, {} as Record<string, TCardData[]>);
 
   // Функция для пересчета порядка карточек в колонке
   const reorderCardsInColumn = (columnCards: TCardData[], startIndex: number, endIndex: number) => {
@@ -76,8 +91,8 @@ const KanbanBoard = () => {
       return;
     }
 
-    const sourceStatus = source.droppableId as TCardItemProps['status'];
-    const destStatus = destination.droppableId as TCardItemProps['status'];
+    const sourceStatus = source.droppableId;
+    const destStatus = destination.droppableId;
 
     // Находим перемещаемую карточку
     const draggedCard = cards.find(card => card.id === draggableId);
@@ -87,7 +102,7 @@ const KanbanBoard = () => {
 
     if (sourceStatus === destStatus) {
       // Перемещение внутри одной колонки
-      const columnCards = groupedCards[sourceStatus];
+      const columnCards = groupedCards[sourceStatus] || [];
       const reorderedCards = reorderCardsInColumn(columnCards, source.index, destination.index);
       
       // Заменяем карточки в общем массиве
@@ -101,7 +116,7 @@ const KanbanBoard = () => {
       newCards = newCards.filter(card => card.id !== draggableId);
 
       // Получаем карточки целевой колонки
-      const destColumnCards = groupedCards[destStatus];
+      const destColumnCards = groupedCards[destStatus] || [];
       
       // Создаем обновленную карточку с новым статусом
       const updatedCard = { 
@@ -151,18 +166,27 @@ const KanbanBoard = () => {
     window.dispatchEvent(new Event('cardsUpdated'));
   };
 
+  const handleColumnAdded = () => {
+    // Обновляем список статусов после добавления новой колонки
+    const loadedStatuses = loadCustomStatuses();
+    setStatuses(loadedStatuses);
+  };
+
   return (
-    <div className="h-full overflow-x-auto">
+    <div className="h-210 overflow-x-auto">
       <div className="flex gap-6 min-w-max p-6">
-        {columns.map(column => (
+        {statuses.map(status => (
           <KanbanColumn
-            key={column.status}
-            status={column.status}
-            title={column.label}
-            cards={groupedCards[column.status] || []}
+            key={status.id}
+            status={status.id}
+            title={status.label}
+            cards={groupedCards[status.id] || []}
             onDragEnd={handleDragEnd}
           />
         ))}
+        
+        {/* Кнопка добавления новой колонки */}
+        <AddColumnButton onColumnAdded={handleColumnAdded} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { CardItem } from '@/components/CardItem';
+import { CardItem } from '@/components/list/CardItem';
 import { TCardData } from '@/types/cards';
 import { loadCardsFromStorage } from '@/utils/cards-storage';
 import { useTaskModal } from '@/hooks/useTaskModal';
@@ -17,7 +17,7 @@ const CardsList = () => {
     setCards(loaded);
   }, [refreshTrigger]);
 
-  // ЕДИНСТВЕННОЕ ДОБАВЛЕНИЕ: слушаем обновления от канбан-доски
+  // Слушаем событие обновления карточек для синхронизации
   useEffect(() => {
     const handleCardsUpdated = () => {
       const loaded = loadCardsFromStorage();
@@ -75,7 +75,7 @@ const CardsList = () => {
         </div>
 
         {/* Карточки - БЕЗ ИЗМЕНЕНИЙ */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col space-y-4">
           {sortedCards.map((card) => (
             <CardItem
               key={card.id}
