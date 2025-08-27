@@ -1,26 +1,37 @@
-### SPA-приложение для управления задачами (To-Do).
-1) Можно создавать, удалять и редактировать карточки с полями
-   - заголовок
-   - статус
-   - приоритет
-   - описание
-   - время создания
-3) Отобржение карточек в двух режимах: список и канбан боска
-4) При отображении карточек списком доступна фильтрация
-   - по дате создания
-   - по алфавиту
-   - по приоритету
-5) При отображени карточек в виде канбан доски:
-   -  поддерживается технология drag-and-drop между категориями (стутус задачи) и внутри одной колонки
-   -  есть возможность создания и удаления новых колонок (статусов)
-6) Карточки сохраняются после перезагрузки страницы
+# To-Do Task Management SPA
 
-### Что можно улучшить?
-1) Использовать React Context для обмена событиями
-2) Улучшить читаемость кода
-3) Доработать дизайн
+A single-page application (SPA) for managing tasks (To-Do).
 
-### Как запустить? 
-- Склонировать этот репозиторий
-- Установить зависимости
-- Выполнить npm run dev
+## Features
+
+- **Create, delete, and edit cards** with the following fields:
+    - Title
+    - Status
+    - Priority
+    - Description
+    - Creation time
+- **Display cards in two modes:**
+    - List view
+    - Kanban board view
+- **List view:**  
+    - Filter cards by:
+        - Creation date
+        - Alphabetical order
+        - Priority
+- **Kanban board view:**  
+    - Drag-and-drop support between categories (task statuses) and within columns
+    - Ability to create and delete columns (statuses)
+- **Persistence:**  
+    - Cards are saved and remain after page reload
+
+## Areas for Improvement
+
+- Use React Context for event handling
+- Improve code readability
+- Refine the design
+
+## Getting Started
+
+1. Clone this repository
+2. Install dependencies
+3. Run `npm run dev`
